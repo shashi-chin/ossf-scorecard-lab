@@ -1,8 +1,13 @@
 # OpenSSF Scorecard Lab
 
-Private sandbox to explore what [OpenSSF Scorecard](https://github.com/ossf/scorecard) and the [Scorecard GitHub Action](https://github.com/ossf/scorecard-action) actually measure and deliver.
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/shashi-chin/ossf-scorecard-lab/badge)](https://scorecard.dev/viewer/?uri=github.com/shashi-chin/ossf-scorecard-lab)
 
-**Repo:** https://github.com/shashi-chin/ossf-scorecard-lab (private)
+Sandbox to explore what [OpenSSF Scorecard](https://github.com/ossf/scorecard) and the [Scorecard GitHub Action](https://github.com/ossf/scorecard-action) actually measure and deliver.
+
+**Repo:** https://github.com/shashi-chin/ossf-scorecard-lab (public)
+
+**Public viewer:** https://scorecard.dev/viewer/?uri=github.com/shashi-chin/ossf-scorecard-lab  
+(appears after the next successful workflow run with `publish_results: true`)
 
 ---
 
@@ -10,12 +15,13 @@ Private sandbox to explore what [OpenSSF Scorecard](https://github.com/ossf/scor
 
 Scorecard is a **repository / supply-chain posture scanner**, not a SAST/DAST bug finder. It answers: *“How well is this project set up against common open-source and CI/CD risks?”*
 
-| Output | Where to find it | Notes for private repos |
-| ------ | ---------------- | ----------------------- |
-| Per-check scores (0–10) + aggregate | Workflow logs + SARIF artifact | Always available |
-| SARIF + JSON score table | **Actions → run → Artifacts → `scorecard-results`** | Kept 14 days; open `results.json` for the full 0–10 table |
-| Code Scanning alerts + remediation text | **Security → Code scanning** | Needs **GitHub Advanced Security** on private repos |
-| Public badge + api.scorecard.dev | N/A | Disabled here (`publish_results: false`) |
+| Output | Where to find it | Notes |
+| ------ | ---------------- | ----- |
+| Public Scorecard viewer | [scorecard.dev](https://scorecard.dev/viewer/?uri=github.com/shashi-chin/ossf-scorecard-lab) | Nicest UI; updates after each published run |
+| Per-check scores (0–10) + aggregate | Viewer + workflow artifacts | Always available |
+| SARIF + JSON score table | **Actions → run → Artifacts → `scorecard-results`** | Kept 14 days; open `results.json` for the raw table |
+| Code Scanning alerts + remediation text | **Security → Code scanning** | Available on public repos |
+| Badge | README above | Uses `api.scorecard.dev` |
 
 Each failed/low check in Code Scanning includes remediation guidance (“Show more” in the alert).
 

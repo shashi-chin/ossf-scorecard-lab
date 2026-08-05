@@ -1,26 +1,21 @@
-# OpenSSF Scorecard — private-repo lab configuration
+# OpenSSF Scorecard — public-repo lab configuration
 #
 # What this gives you:
 # - Per-check security posture scores (0–10) for supply-chain / repo hygiene
-# - SARIF artifact on each run (Actions → Artifacts)
-# - Optional Code Scanning alerts (needs GitHub Advanced Security on private repos)
+# - SARIF + JSON artifacts on each run (Actions → Artifacts)
+# - Code Scanning alerts (Security → Code scanning) on public repos
+# - Published results + badge via api.scorecard.dev / scorecard.dev viewer
 #
-# Private-repo notes:
-# - publish_results must stay false (public badge API is for public repos)
-# - Extra read permissions below help GraphQL/SAST checks with GITHUB_TOKEN
-# - Optional: create a fine-grained PAT (read-only) as secret SCORECARD_TOKEN
-#   for fuller Branch-Protection / admin-gated settings. See README.
+# Optional: create a fine-grained PAT (read-only) as secret SCORECARD_TOKEN
+# for fuller Branch-Protection / admin-gated settings. See README.
 
 name: OpenSSF Scorecard
 
 on:
-  # Experimental but useful for on-demand exploration
   workflow_dispatch:
-  # Default branch only is officially supported for push
   push:
     branches:
       - main
-  # Weekly baseline scan
   schedule:
     - cron: "30 1 * * 6"
 
@@ -31,11 +26,8 @@ jobs:
     name: Scorecard analysis
     runs-on: ubuntu-latest
     permissions:
-      # Code Scanning SARIF upload (requires GHAS on private repos)
       security-events: write
-      # Needed if publish_results were true (kept false for private)
       id-token: write
-      # Private-repo reads — avoids "Resource not accessible by integration"
       contents: read
       issues: read
       pull-requests: read
@@ -55,15 +47,15 @@ jobs:
           results_format: sarif
           # Uncomment after adding repo secret SCORECARD_TOKEN (fine-grained PAT):
           # repo_token: ${{ secrets.SCORECARD_TOKEN }}
-          # Private repos: never publish to the public Scorecard API / badge
-          publish_results: false
+          # Publishes to public Scorecard API so badge + scorecard.dev viewer work
+          publish_results: true
 
-      # JSON is easier to read for learning: full per-check scores + reasons
       - name: Run analysis (JSON score table)
         uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
         with:
           results_file: results.json
           results_format: json
+          # Only one step should publish; keep false here
           publish_results: false
 
       - name: Upload Scorecard artifacts
@@ -75,10 +67,7 @@ jobs:
             results.json
           retention-days: 14
 
-      # On private repos without GitHub Advanced Security this step fails;
-      # continue so the run still succeeds and the artifact remains usable.
       - name: Upload to code scanning
-        continue-on-error: true
         uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4.37.4
         with:
           sarif_file: results.sarif
