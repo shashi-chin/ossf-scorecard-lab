@@ -13,7 +13,7 @@ Scorecard is a **repository / supply-chain posture scanner**, not a SAST/DAST bu
 | Output | Where to find it | Notes for private repos |
 | ------ | ---------------- | ----------------------- |
 | Per-check scores (0–10) + aggregate | Workflow logs + SARIF artifact | Always available |
-| SARIF file (`results.sarif`) | **Actions → run → Artifacts → `scorecard-sarif`** | Kept 14 days |
+| SARIF + JSON score table | **Actions → run → Artifacts → `scorecard-results`** | Kept 14 days; open `results.json` for the full 0–10 table |
 | Code Scanning alerts + remediation text | **Security → Code scanning** | Needs **GitHub Advanced Security** on private repos |
 | Public badge + api.scorecard.dev | N/A | Disabled here (`publish_results: false`) |
 
@@ -60,8 +60,9 @@ Full criteria: [Scorecard checks docs](https://github.com/ossf/scorecard/blob/ma
 ### 2. Read the SARIF artifact (works without Advanced Security)
 
 1. Open the completed workflow run  
-2. Download **scorecard-sarif**  
-3. Open `results.sarif` (VS Code SARIF Viewer, or any JSON viewer)
+2. Download **scorecard-results**  
+3. Open `results.json` for the full per-check score table (easiest learning path)  
+4. Open `results.sarif` if you want the Code Scanning-oriented view
 
 ### 3. Optional: Code Scanning dashboard
 
