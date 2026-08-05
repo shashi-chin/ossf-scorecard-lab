@@ -1,0 +1,4 @@
+# INTENTIONAL known-vulnerable pins for Scorecard Vulnerabilities education.
+# Do not use these versions in production.
+django==1.11.29
+PyYAML==5.1

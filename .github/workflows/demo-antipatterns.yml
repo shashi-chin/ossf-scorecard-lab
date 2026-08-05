@@ -5,14 +5,17 @@
 # - Token-Permissions   (permissions: write-all)
 # - Pinned-Dependencies (mutable action tags like @v4 instead of commit SHAs)
 #
+# The paths filter under pull_request_target avoids running on normal PRs
+# (so CI-Tests can still fail), while keeping the dangerous YAML for Scorecard.
+#
 # Do NOT copy this into a real product repository.
 
 name: demo-antipatterns
 
 on:
-  # pull_request_target is privileged (secrets + write to base repo).
-  # Combined with checking out the PR head, this is a classic pwn-request pattern.
   pull_request_target:
+    paths:
+      - "this-path-does-not-exist-for-lab/**"
   workflow_dispatch:
 
 # Fails Token-Permissions: overly broad token at workflow level
@@ -27,6 +30,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+
+      # Also unpinned third-party-style mutable tag (same action family for demo)
+      - name: Extra unpinned action
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
       # Fails Dangerous-Workflow: untrusted context interpolated into a script
       - name: Unsafe echo of untrusted title

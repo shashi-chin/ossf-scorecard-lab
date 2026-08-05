@@ -48,26 +48,32 @@
 
 ## Intentional failure map (this project)
 
-| Check | Typical lab outcome | How we force the lesson |
+Snapshot after the “failure classroom” setup (aggregate **~2.1** — re-check the [viewer](https://scorecard.dev/viewer/?uri=github.com/shashi-chin/ossf-scorecard-lab) for live numbers).  
+“Fail a criterion” ≠ always score `0`: Scorecard often uses **tiered / proportional** scoring (e.g. one binary or one unpinned Action may yield **9/10** with an explicit Warn).
+
+| Check | Lab score (approx) | Failed criterion / evidence in this repo |
 | --- | --- | --- |
-| Dangerous-Workflow | **0** | `demo-antipatterns.yml`: `pull_request_target` + PR checkout + `${{ github.event.pull_request.title }}` in `run:` |
-| Maintained | **0** | Brand-new repo (&lt; 90 days) — Scorecard warns to review carefully |
-| Code-Review | **0** | Changes land without required reviewed PRs / approvals |
-| Branch-Protection | **0** | No ruleset / classic branch protection on `main` |
-| Binary-Artifacts | **0** | Checked-in ELF-like binary at [`bin/demo-helper`](bin/demo-helper) |
+| Dangerous-Workflow | **0** | `demo-antipatterns.yml`: `pull_request_target` + PR checkout + `${{ github.event.pull_request.title }}` |
+| Maintained | **0** | Repo &lt; 90 days — “review its contents carefully” |
+| Code-Review | **0** | Merges without approvals (`Found 0/N approved changesets`) |
+| Branch-Protection | **0** | No ruleset / protection on `main` |
+| Binary-Artifacts | **9** (Warn) | [`bin/demo-helper`](bin/demo-helper) checked in — *binaries present* |
 | Dependency-Update-Tool | **0** | No Dependabot / Renovate config |
 | Token-Permissions | **0** | `permissions: write-all` in anti-pattern workflow |
-| Vulnerabilities | **0** (or low) | [`package.json`](package.json) pins `lodash@4.17.15` (known OSV findings) |
-| SAST | **0** | No CodeQL / Sonar (or similar) wired |
-| Fuzzing | **0** | No OSS-Fuzz / ClusterFuzzLite / language fuzz entrypoints |
-| Pinned-Dependencies | **&lt;10** | Anti-pattern workflow uses `actions/checkout@v4` (mutable tag) |
+| Vulnerabilities | **0–10*** | [`package.json`](package.json) `lodash@4.17.15` + [`requirements.txt`](requirements.txt) old Django/PyYAML (*OSV detection can lag until lockfiles/ecosystems resolve*) |
+| SAST | **0** | No CodeQL / Sonar on all commits |
+| Fuzzing | **0** | No fuzzer integration |
+| Pinned-Dependencies | **9** (Warn) | `actions/checkout@v4` / `setup-node@v4` + unpinned `Dockerfile` base |
 | Security-Policy | **0** | No `SECURITY.md` |
-| CII-Best-Practices | **0** | No OpenSSF Best Practices badge effort |
-| Contributors | **0** | Single-author lab (no multi-org contributor diversity) |
-| License | **0** | No `LICENSE` file |
-| CI-Tests | **0** or **?** | No PR test gate (see section; `?` until enough PRs exist) |
-| Packaging | **?** | No GitHub Packages / language-hub publish workflow |
-| Signed-Releases | **0** or **?** | Unsigned GitHub Release assets when a release exists |
+| CII-Best-Practices | **0** | No Best Practices badge |
+| Contributors | **0** | Solo-author lab |
+| License | **0** | No `LICENSE` |
+| CI-Tests | **0–10**** | No real test gate; a workflow run on a PR can accidentally raise this — see note below |
+| Packaging | **?** (−1) | No packaging publish workflow |
+| Signed-Releases | **0** | [Unsigned release `v0.0.1-unsigned`](https://github.com/shashi-chin/ossf-scorecard-lab/releases/tag/v0.0.1-unsigned) |
+
+\*If Vulnerabilities still shows 10, open the check detail after the next run — OSV may need the manifest format Scorecard’s scanner recognizes; the educational pin is still the intended failure seed.  
+\*\*CI-Tests scored 10 once because `pull_request_target` ran on a lab PR. The anti-pattern workflow now uses a **non-matching `paths:` filter** so it stays in YAML for Dangerous-Workflow but should not CI-pass future PRs.
 
 The Scorecard Action workflow itself stays pinned + least-privilege so results can still publish to [scorecard.dev](https://scorecard.dev).
 
@@ -161,7 +167,8 @@ Whether opaque executables are committed (hard to review; may drift from source)
 “Just commit the binary the model built” shortcuts reproducibility and hides malware.
 
 **How this project fails**  
-[`bin/demo-helper`](bin/demo-helper) — small ELF-header blob checked into git on purpose.
+[`bin/demo-helper`](bin/demo-helper) — ELF-header blob checked into git on purpose.  
+Scorecard Warn: `binary detected: bin/demo-helper`. With few binaries the numeric score may stay high (e.g. **9/10**) — the **failed criterion** is still “binaries present in source.”
 
 **Remediation**  
 Build in CI; release via attested artifacts; don’t store `.exe`/`.so`/`.dll`/`.class` in source without a strong exception policy.
@@ -216,7 +223,10 @@ Open known vulns in the project or its dependencies via [OSV](https://osv.dev/).
 This is the closest Scorecard check to “are we shipping known bad CVEs?” — complementary to AI that may suggest outdated majors.
 
 **How this project fails**  
-[`package.json`](package.json) intentionally depends on `lodash@4.17.15` (historical prototype-pollution advisories in OSV).
+- [`package.json`](package.json) → `lodash@4.17.15`  
+- [`requirements.txt`](requirements.txt) → `django==1.11.29`, `PyYAML==5.1`  
+
+These are classic OSV-listed pins. If the live score is still 10, treat that as a teaching moment: **scanner coverage depends on manifests/lockfiles and ecosystem support**, so always verify with `osv-scanner` / GitHub Dependabot alerts too.
 
 **Remediation**  
 Bump to fixed versions; run `osv-scanner` / Dependabot security updates; use `osv-scanner.toml` only with documented exceptions.
@@ -361,10 +371,11 @@ Whether recent PRs ran tests before merge.
 AI PRs need executable proof, not vibes. Without CI, review is theatre.
 
 **How this project fails**  
-No test workflow required on PRs. Outcome may be **`?` (N/A)** until Scorecard sees enough PRs, then **0** if merges happen without CI.
+There is no unit-test workflow. A lab PR once scored **10** because the anti-pattern `pull_request_target` workflow *ran* and counted as “CI.”  
+The anti-pattern file still contains the dangerous YAML, but its `paths:` filter should prevent it from running on normal PRs so future unreviewed merges can show **0**.
 
 **Remediation**  
-Add `pull_request` CI running unit tests; mark check required in ruleset.
+Add a real `pull_request` test job; mark that check **required** in a ruleset (ties to Branch-Protection).
 
 **Interview prompt:** *CI-Tests vs SAST vs Branch-Protection required checks — how do they layer?*
 

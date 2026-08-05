@@ -2,8 +2,10 @@
   "name": "ossf-scorecard-lab-vuln-demo",
   "version": "0.0.1",
   "private": true,
-  "description": "INTENTIONAL: pins a known-vulnerable dependency so Scorecard Vulnerabilities can fail for education.",
+  "description": "INTENTIONAL: pins known-vulnerable dependencies so Scorecard Vulnerabilities can fail for education.",
   "dependencies": {
-    "lodash": "4.17.15"
+    "lodash": "4.17.15",
+    "minimist": "0.0.8",
+    "serialize-javascript": "2.1.1"
   }
 }
