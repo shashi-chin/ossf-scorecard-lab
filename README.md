@@ -48,32 +48,29 @@
 
 ## Intentional failure map (this project)
 
-Snapshot after the “failure classroom” setup (aggregate **~2.1** — re-check the [viewer](https://scorecard.dev/viewer/?uri=github.com/shashi-chin/ossf-scorecard-lab) for live numbers).  
-“Fail a criterion” ≠ always score `0`: Scorecard often uses **tiered / proportional** scoring (e.g. one binary or one unpinned Action may yield **9/10** with an explicit Warn).
+Live snapshot after the “failure classroom” setup (**aggregate 1.0** — confirm on the [viewer](https://scorecard.dev/viewer/?uri=github.com/shashi-chin/ossf-scorecard-lab)).  
+“Fail a criterion” ≠ always score `0`: Scorecard uses **tiered / proportional** scoring (e.g. one binary → **9/10** with Warn; mixed CI history → **5/10**).
 
-| Check | Lab score (approx) | Failed criterion / evidence in this repo |
+| Check | Lab score | Failed criterion / evidence in this repo |
 | --- | --- | --- |
-| Dangerous-Workflow | **0** | `demo-antipatterns.yml`: `pull_request_target` + PR checkout + `${{ github.event.pull_request.title }}` |
+| Dangerous-Workflow | **0** | `demo-antipatterns.yml`: `pull_request_target` + PR checkout + untrusted `${{ ... }}` |
 | Maintained | **0** | Repo &lt; 90 days — “review its contents carefully” |
 | Code-Review | **0** | Merges without approvals (`Found 0/N approved changesets`) |
 | Branch-Protection | **0** | No ruleset / protection on `main` |
-| Binary-Artifacts | **9** (Warn) | [`bin/demo-helper`](bin/demo-helper) checked in — *binaries present* |
+| Binary-Artifacts | **9** | [`bin/demo-helper`](bin/demo-helper) — Warn: binaries present |
 | Dependency-Update-Tool | **0** | No Dependabot / Renovate config |
 | Token-Permissions | **0** | `permissions: write-all` in anti-pattern workflow |
-| Vulnerabilities | **0–10*** | [`package.json`](package.json) `lodash@4.17.15` + [`requirements.txt`](requirements.txt) old Django/PyYAML (*OSV detection can lag until lockfiles/ecosystems resolve*) |
+| Vulnerabilities | **0** | **18** OSV findings from [`package.json`](package.json) / [`package-lock.json`](package-lock.json) + [`requirements.txt`](requirements.txt) |
 | SAST | **0** | No CodeQL / Sonar on all commits |
 | Fuzzing | **0** | No fuzzer integration |
-| Pinned-Dependencies | **9** (Warn) | `actions/checkout@v4` / `setup-node@v4` + unpinned `Dockerfile` base |
+| Pinned-Dependencies | **4** | Unpinned Actions (`@v4`) + unpinned [`Dockerfile`](Dockerfile) base image |
 | Security-Policy | **0** | No `SECURITY.md` |
 | CII-Best-Practices | **0** | No Best Practices badge |
 | Contributors | **0** | Solo-author lab |
 | License | **0** | No `LICENSE` |
-| CI-Tests | **0–10**** | No real test gate; a workflow run on a PR can accidentally raise this — see note below |
+| CI-Tests | **5** | 1/2 merged PRs had a check run (no real test suite; proportional score) |
 | Packaging | **?** (−1) | No packaging publish workflow |
 | Signed-Releases | **0** | [Unsigned release `v0.0.1-unsigned`](https://github.com/shashi-chin/ossf-scorecard-lab/releases/tag/v0.0.1-unsigned) |
-
-\*If Vulnerabilities still shows 10, open the check detail after the next run — OSV may need the manifest format Scorecard’s scanner recognizes; the educational pin is still the intended failure seed.  
-\*\*CI-Tests scored 10 once because `pull_request_target` ran on a lab PR. The anti-pattern workflow now uses a **non-matching `paths:` filter** so it stays in YAML for Dangerous-Workflow but should not CI-pass future PRs.
 
 The Scorecard Action workflow itself stays pinned + least-privilege so results can still publish to [scorecard.dev](https://scorecard.dev).
 
