@@ -1,0 +1,4 @@
+artifacts/
+artifacts-check/
+node_modules/
+*.log

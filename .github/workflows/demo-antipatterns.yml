@@ -1,0 +1,33 @@
+# INTENTIONAL ANTI-PATTERN WORKFLOW — educational lab only
+#
+# This workflow exists so OpenSSF Scorecard can demonstrate FAILING checks:
+# - Dangerous-Workflow  (pull_request_target + PR checkout + untrusted interpolation)
+# - Token-Permissions   (permissions: write-all)
+# - Pinned-Dependencies (mutable action tags like @v4 instead of commit SHAs)
+#
+# Do NOT copy this into a real product repository.
+
+name: demo-antipatterns
+
+on:
+  # pull_request_target is privileged (secrets + write to base repo).
+  # Combined with checking out the PR head, this is a classic pwn-request pattern.
+  pull_request_target:
+  workflow_dispatch:
+
+# Fails Token-Permissions: overly broad token at workflow level
+permissions: write-all
+
+jobs:
+  unsafe-example:
+    runs-on: ubuntu-latest
+    steps:
+      # Fails Pinned-Dependencies: tag pin is mutable, not a full commit SHA
+      - name: Checkout untrusted PR code into a privileged workflow
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      # Fails Dangerous-Workflow: untrusted context interpolated into a script
+      - name: Unsafe echo of untrusted title
+        run: echo "PR title was ${{ github.event.pull_request.title }}"
