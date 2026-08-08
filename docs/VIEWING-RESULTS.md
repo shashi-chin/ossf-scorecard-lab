@@ -11,6 +11,8 @@ This lab builds an HTML report **inside the workflow** and uploads it as an Acti
 4. Download **`scorecard-results`** (zip).
 5. Unzip and open **`scorecard-report.html`** in your browser.
 
+The HTML viewer is scorecard.dev-inspired: aggregate ring, pass/fail/N/A stats, risk badges (Critical/High/Medium/Low), search, sort, and expandable check details with doc links.
+
 You will also find:
 - `results.json` — raw scores (good for scripts)
 - `results.sarif` — Code Scanning format / VS Code SARIF Viewer
