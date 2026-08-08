@@ -1,13 +1,13 @@
-# OpenSSF Scorecard — public-repo lab configuration
+# OpenSSF Scorecard workflow
 #
-# What this gives you:
-# - Per-check security posture scores (0–10) for supply-chain / repo hygiene
-# - SARIF + JSON artifacts on each run (Actions → Artifacts)
-# - Code Scanning alerts (Security → Code scanning) on public repos
-# - Published results + badge via api.scorecard.dev / scorecard.dev viewer
+# Private-repo viewing strategy (also works when public):
+# 1) Run Scorecard → results.json + results.sarif
+# 2) Build scorecard-report.html in CI (make_report.py)
+# 3) Upload all three as Actions artifact "scorecard-results"
+# 4) Humans download the zip and open scorecard-report.html in a browser
 #
-# Optional: create a fine-grained PAT (read-only) as secret SCORECARD_TOKEN
-# for fuller Branch-Protection / admin-gated settings. See README.
+# scorecard.dev / public badge only apply when the repo is public and
+# publish_results: true. Private repos should keep publish_results: false.
 
 name: OpenSSF Scorecard
 
@@ -40,14 +40,13 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Run analysis (SARIF for Code Scanning)
+      - name: Run analysis (SARIF)
         uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
         with:
           results_file: results.sarif
           results_format: sarif
-          # Uncomment after adding repo secret SCORECARD_TOKEN (fine-grained PAT):
-          # repo_token: ${{ secrets.SCORECARD_TOKEN }}
-          # Publishes to public Scorecard API so badge + scorecard.dev viewer work
+          # For a real private repo, set publish_results: false
+          # (public lab keeps true so scorecard.dev still works)
           publish_results: true
 
       - name: Run analysis (JSON score table)
@@ -55,8 +54,11 @@ jobs:
         with:
           results_file: results.json
           results_format: json
-          # Only one step should publish; keep false here
           publish_results: false
+
+      # Private-friendly viewer: no scorecard.dev required
+      - name: Build HTML viewer
+        run: python3 make_report.py --input results.json --output scorecard-report.html
 
       - name: Upload Scorecard artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -65,9 +67,11 @@ jobs:
           path: |
             results.sarif
             results.json
+            scorecard-report.html
           retention-days: 14
 
       - name: Upload to code scanning
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4.37.4
         with:
           sarif_file: results.sarif

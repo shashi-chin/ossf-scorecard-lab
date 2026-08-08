@@ -443,11 +443,14 @@ Work these in order for interview drills:
 
 ## Viewing results
 
+**Private-repo style (implemented here):** each Scorecard run builds `scorecard-report.html` in CI and uploads it in the `scorecard-results` artifact. Download the zip → open the HTML. Details: [docs/VIEWING-RESULTS.md](docs/VIEWING-RESULTS.md).
+
 | Surface | URL / path |
 | --- | --- |
-| Official UI | https://scorecard.dev/viewer/?uri=github.com/shashi-chin/ossf-scorecard-lab |
-| Actions artifacts | Workflow run → `scorecard-results` → `results.json` / `results.sarif` |
-| Code Scanning | Repo **Security** tab (public repos) |
+| **HTML viewer (private-friendly)** | Actions → run → Artifacts → `scorecard-results` → **`scorecard-report.html`** |
+| Official public UI | https://scorecard.dev/viewer/?uri=github.com/shashi-chin/ossf-scorecard-lab |
+| Raw JSON / SARIF | Same artifact: `results.json`, `results.sarif` |
+| Code Scanning | Repo **Security** tab (public / GHAS) |
 | Check criteria | https://github.com/ossf/scorecard/blob/main/docs/checks.md |
 
 ---
